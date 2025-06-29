@@ -13,11 +13,10 @@ const Stack = createStackNavigator();
 
 const AuthNavigator = () => (
   <Stack.Navigator
-    // initialRouteName="SplashScreen"
+    initialRouteName="Onboarding"
     screenOptions={{headerShown: false}}>
-    <Stack.Screen name="SplashScreen" component={SplashScreen} />
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="LoginScreen" component={LoginScreen} />
     <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
     <Stack.Screen name="RecoverEmailScreen" component={RecoverEmailScreen} />
     <Stack.Screen name="RecoverOtpScreen" component={RecoverOtpScreen} />

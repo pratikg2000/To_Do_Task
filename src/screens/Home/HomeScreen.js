@@ -1,187 +1,333 @@
-// import {StyleSheet, Text, View} from 'react-native';
-// import React from 'react';
-
-// const HomeScreen = () => {
-//   return (
-//     <View>
-//       <Text>HomeScreen</Text>
-//     </View>
-//   );
-// };
-
-// export default HomeScreen;
-
-// const styles = StyleSheet.create({});
-
-import React from 'react';
+import {useEffect, useState, useCallback, useMemo} from 'react';
 import {
   View,
   Text,
-  Image,
-  TouchableOpacity,
   FlatList,
-  StyleSheet,
-  Dimensions,
+  TouchableOpacity,
+  ScrollView,
+  Image,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {ScrollView} from 'react-native-gesture-handler';
+import {useDispatch, useSelector} from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
 
-const {width} = Dimensions.get('window');
+import {setCategories} from '../../redux/categorySlice';
+import {setCategoryProducts} from '../../redux/categoryProductsSlice';
+import {Imp} from '../../BasicImp';
 
-const categories = [
-  {icon: 'dog', label: 'Beauty'},
-  {icon: 'cog', label: 'Tech'},
-  {icon: 'scissors-cutting', label: 'Craft'},
-  {icon: 'hammer', label: 'Labor'},
-  {icon: 'dots-horizontal', label: 'Other'},
-];
+import {LoadingSkeleton} from '../../components/LoadingSkeleton';
+import {SearchBar} from '../../components/SearchBar';
+import {CategoryTabs} from '../../components/CategoryTabs';
+import {SpecialOffersCarousel} from '../../components/SpecialOffersCarousel';
+import {ProductCard} from '../../components/ProductCard';
+import {styles} from '../styles/HomeScreenStyles';
 
-const posts = [
+const SPECIAL_OFFERS = [
   {
-    id: '1',
-    user: 'Kate K.',
-    location: 'City, Country',
-    image: require('../../assets/images/glowkart-logo.png'),
+    id: 1,
+    title: 'Summer Glow Package',
+    discount: '30% OFF',
+    period: 'Valid till Aug 31',
+    image:
+      'https://via.placeholder.com/200x120/8B5CF6/FFFFFF?text=Special+Offer+1',
   },
   {
-    id: '2',
-    user: 'Full Name',
-    location: 'City, Country',
-    image: require('../../assets/images/glowkart-logo.png'),
+    id: 2,
+    title: 'Winter Refresh Deal',
+    discount: '20% OFF',
+    period: 'Valid till Dec 31',
+    image:
+      'https://via.placeholder.com/200x120/FF6347/FFFFFF?text=Special+Offer+2',
+  },
+  {
+    id: 3,
+    title: 'Spring Beauty Blast',
+    discount: '25% OFF',
+    period: 'Valid till May 31',
+    image:
+      'https://via.placeholder.com/200x120/3CB371/FFFFFF?text=Special+Offer+3',
+  },
+  {
+    id: 4,
+    title: 'Monsoon Magic',
+    discount: '15% OFF',
+    period: 'Valid till Sep 15',
+    image:
+      'https://via.placeholder.com/200x120/6A5ACD/FFFFFF?text=Special+Offer+4',
   },
 ];
 
 const HomeScreen = () => {
-  const renderCategory = ({item}) => (
-    <View style={styles.categoryItem}>
-      <Icon name={item.icon} size={24} color="#000" />
-      <Text style={styles.categoryLabel}>{item.label}</Text>
-    </View>
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+  const categories = useSelector(state => state.category.categories);
+
+  const [loading, setLoading] = useState(true);
+  const [groupedProducts, setGroupedProducts] = useState({});
+  const [filteredGroupedProducts, setFilteredGroupedProducts] = useState({});
+  const [trendingProducts, setTrendingProducts] = useState([]);
+  const [filteredTrendingProducts, setFilteredTrendingProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
+
+  const specialOffers = useMemo(() => SPECIAL_OFFERS, []);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      const fullUrl = `${Imp.Constant.HOME_MOBILE_PRODUCTS}`;
+
+      Imp.Util.call_Get_by_URI(
+        fullUrl,
+        (response, success) => {
+          if (!success) {
+            console.error('Failed to fetch data');
+            setLoading(false);
+            return;
+          }
+
+          const categoryList = response?.categories || [];
+          const productList = response?.products || [];
+
+          dispatch(setCategories(categoryList));
+
+          const groupedByCategoryId = {};
+          const groupedByCategoryName = {};
+
+          productList.forEach(product => {
+            const categoryId = product.category_id;
+            const categoryName = product.category;
+
+            if (categoryId) {
+              if (!groupedByCategoryId[categoryId])
+                groupedByCategoryId[categoryId] = [];
+              groupedByCategoryId[categoryId].push(product);
+            }
+
+            if (categoryName) {
+              if (!groupedByCategoryName[categoryName])
+                groupedByCategoryName[categoryName] = [];
+              groupedByCategoryName[categoryName].push(product);
+            }
+          });
+
+          Object.entries(groupedByCategoryId).forEach(
+            ([categoryId, products]) => {
+              dispatch(setCategoryProducts({categoryId, products}));
+            },
+          );
+
+          const chunkedProducts = {};
+          Object.entries(groupedByCategoryName).forEach(
+            ([categoryName, products]) => {
+              chunkedProducts[categoryName] = [products.slice(0, 4)];
+            },
+          );
+
+          const trending = productList.slice(0, 10);
+
+          setGroupedProducts(chunkedProducts);
+          setFilteredGroupedProducts(chunkedProducts);
+          setTrendingProducts(trending);
+          setFilteredTrendingProducts(trending);
+          setLoading(false);
+        },
+        dispatch,
+      );
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      setLoading(false);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  const handleSearchChange = useCallback(
+    text => {
+      setSearchText(text);
+      if (text === '') {
+        setFilteredTrendingProducts(trendingProducts);
+        setFilteredGroupedProducts(groupedProducts);
+        return;
+      }
+      const lowerText = text.toLowerCase();
+      const filteredTrending = trendingProducts.filter(product =>
+        product.title?.toLowerCase().includes(lowerText),
+      );
+      const newFilteredGroup = {};
+      Object.entries(groupedProducts).forEach(([category, productsArray]) => {
+        const filteredItems = productsArray[0].filter(product =>
+          product.title?.toLowerCase().includes(lowerText),
+        );
+        if (filteredItems.length > 0)
+          newFilteredGroup[category] = [filteredItems];
+      });
+      setFilteredTrendingProducts(filteredTrending);
+      setFilteredGroupedProducts(newFilteredGroup);
+    },
+    [trendingProducts, groupedProducts],
   );
 
-  const renderPost = ({item}) => (
-    <View style={styles.postContainer}>
-      <View style={styles.postHeader}>
-        <Image
-          source={require('../../assets/images/glowkart-logo.png')}
-          style={styles.avatar}
-        />
-        <View>
-          <Text style={styles.userName}>{item.user}</Text>
-          <Text style={styles.location}>{item.location}</Text>
-        </View>
-        <TouchableOpacity style={styles.seeMore}>
-          <Text style={styles.seeMoreText}>See more</Text>
-        </TouchableOpacity>
-      </View>
-      <Image source={item.image} style={styles.postImage} resizeMode="cover" />
-    </View>
+  const handleTabPress = useCallback(
+    categoryName => {
+      setActiveTab(categoryName);
+      if (!categoryName || !groupedProducts[categoryName]) {
+        setFilteredGroupedProducts(groupedProducts);
+        return;
+      }
+      setFilteredGroupedProducts({
+        [categoryName]: groupedProducts[categoryName],
+      });
+    },
+    [groupedProducts],
   );
+
+  const handleOfferIndexChange = useCallback(index => {
+    setCurrentOfferIndex(index);
+  }, []);
+
+  const handleProductPress = useCallback(
+    product => {
+      navigation.navigate('ProductDetail', {product});
+    },
+    [navigation],
+  );
+
+  const handleCategoryPress = useCallback(
+    (categoryId, categoryName) => {
+      navigation.navigate('CategoryProductsScreen', {categoryId, categoryName});
+    },
+    [navigation],
+  );
+
+  const renderCategorySection = category => {
+    const categoryName = category.name;
+    const allProducts = filteredGroupedProducts[categoryName]?.[0] || [];
+    if (allProducts.length === 0) return null;
+    return (
+      <View key={category.id} style={styles.sectionContainer}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{categoryName}</Text>
+          <TouchableOpacity
+            onPress={() => handleCategoryPress(category.id, category.name)}>
+            <Text style={styles.seeAllText}>See All</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={
+            allProducts.length > 4
+              ? [...allProducts.slice(0, 4), {isSeeMore: true}]
+              : allProducts
+          }
+          renderItem={({item}) =>
+            item.isSeeMore ? (
+              <TouchableOpacity
+                style={{
+                  height: 160,
+                  width: 140,
+                  backgroundColor: '#fff',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginHorizontal: 5,
+                  borderRadius: 10,
+                  elevation: 2,
+                }}
+                onPress={() => handleCategoryPress(category.id, category.name)}>
+                <Text style={{fontSize: 20, color: '#8B5CF6'}}>+ See More</Text>
+              </TouchableOpacity>
+            ) : (
+              <ProductCard product={item} onPress={handleProductPress} />
+            )
+          }
+          keyExtractor={(item, index) =>
+            item?.id?.toString?.() || `item-${index}`
+          }
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
+    );
+  };
+
+  const renderTrendingProduct = useCallback(
+    ({item}) => <ProductCard product={item} onPress={handleProductPress} />,
+    [handleProductPress],
+  );
+
+  if (loading) return <LoadingSkeleton />;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/glowkart-logo.png')}
-          style={styles.avatarLarge}
-        />
-        <Text style={styles.welcomeText}>Welcome, Mia!</Text>
-        <TouchableOpacity style={styles.iconButton}>
-          <Icon name="cog-outline" size={24} color="#000" />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.stickyHeader}>
+        <View style={styles.headerContent}>
+          <View style={styles.userInfo}>
+            <Image
+              source={{uri: 'https://randomuser.me/api/portraits/women/44.jpg'}}
+              style={styles.avatar}
+            />
+            <Text style={styles.userName}>Mia</Text>
+          </View>
+          <TouchableOpacity>
+            <Image
+              source={{
+                uri: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+              }}
+              style={styles.locationIcon}
+            />
+          </TouchableOpacity>
+        </View>
+        <SearchBar onSearchChange={handleSearchChange} />
       </View>
 
-      <FlatList
-        horizontal
-        data={categories}
-        renderItem={renderCategory}
-        keyExtractor={item => item.label}
-        contentContainerStyle={styles.categoryList}
-        showsHorizontalScrollIndicator={false}
-      />
+      {/* Scrollable Content */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{paddingTop: 150}} // add height same as sticky header
+      >
+        <View
+          style={{
+            backgroundColor: 'white',
+            width: '100%',
+            borderTopLeftRadius: 30,
+            borderTopRightRadius: 30,
+          }}>
+          <CategoryTabs
+            categories={categories}
+            activeTab={activeTab}
+            onTabPress={handleTabPress}
+          />
+          <SpecialOffersCarousel
+            offers={specialOffers}
+            currentIndex={currentOfferIndex}
+            onIndexChange={handleOfferIndexChange}
+          />
 
-      <FlatList
-        data={posts}
-        renderItem={renderPost}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{paddingBottom: 80}}
-      />
-    </ScrollView>
+          {filteredTrendingProducts.length > 0 && (
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Trending Products</Text>
+                <TouchableOpacity
+                  onPress={() => handleCategoryPress(null, 'All Products')}>
+                  <Text style={styles.seeAllText}>See All</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={filteredTrendingProducts}
+                renderItem={renderTrendingProduct}
+                keyExtractor={item => item.id.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
+            </View>
+          )}
+
+          {categories.map(renderCategorySection)}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  welcomeText: {
-    flex: 1,
-    fontSize: 20,
-    fontWeight: '600',
-    marginLeft: 10,
-  },
-  iconButton: {
-    padding: 8,
-  },
-  avatarLarge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  categoryList: {
-    marginVertical: 10,
-  },
-  categoryItem: {
-    alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  categoryLabel: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  postContainer: {
-    marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: '#f9f9f9',
-    overflow: 'hidden',
-  },
-  postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
-  },
-  userName: {
-    fontWeight: '600',
-  },
-  location: {
-    fontSize: 12,
-    color: '#888',
-  },
-  seeMore: {
-    marginLeft: 'auto',
-  },
-  seeMoreText: {
-    color: '#5A55CA',
-    fontWeight: '600',
-  },
-  postImage: {
-    width: '100%',
-    height: width * 0.6,
-  },
-});
 
 export default HomeScreen;

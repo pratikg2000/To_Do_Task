@@ -5,6 +5,7 @@ import HomeScreen from '../screens/Home/HomeScreen';
 import ProductDetailScreen from '../screens/Home/ProductDetailScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import CartScreen from '../screens/Cart/CartScreen';
+import SplashScreen from '../screens/Auth/SplashScreen';
 
 const Stack = createStackNavigator();
 
