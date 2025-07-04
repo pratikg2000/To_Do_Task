@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, ScrollView, TouchableOpacity, Text} from 'react-native';
-import {styles} from '../screens/styles/HomeScreenStyles';
+import {styles} from '../screens/styles/ProductListStyles';
 
 export const CategoryTabs = ({categories, activeTab, onTabPress}) => {
   const modifiedCategories = [{id: 'all', name: 'All'}, ...categories];

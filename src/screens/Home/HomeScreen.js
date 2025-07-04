@@ -144,31 +144,35 @@ const HomeScreen = () => {
     fetchCategories();
   }, [fetchCategories]);
 
-  const handleSearchChange = useCallback(
-    text => {
-      setSearchText(text);
-      if (text === '') {
-        setFilteredTrendingProducts(trendingProducts);
-        setFilteredGroupedProducts(groupedProducts);
-        return;
-      }
-      const lowerText = text.toLowerCase();
-      const filteredTrending = trendingProducts.filter(product =>
-        product.title?.toLowerCase().includes(lowerText),
-      );
-      const newFilteredGroup = {};
-      Object.entries(groupedProducts).forEach(([category, productsArray]) => {
-        const filteredItems = productsArray[0].filter(product =>
-          product.title?.toLowerCase().includes(lowerText),
-        );
-        if (filteredItems.length > 0)
-          newFilteredGroup[category] = [filteredItems];
-      });
-      setFilteredTrendingProducts(filteredTrending);
-      setFilteredGroupedProducts(newFilteredGroup);
-    },
-    [trendingProducts, groupedProducts],
-  );
+  // const handleSearchChange = useCallback(
+  //   text => {
+  //     setSearchText(text);
+  //     if (text === '') {
+  //       setFilteredTrendingProducts(trendingProducts);
+  //       setFilteredGroupedProducts(groupedProducts);
+  //       return;
+  //     }
+  //     const lowerText = text.toLowerCase();
+  //     const filteredTrending = trendingProducts.filter(product =>
+  //       product.title?.toLowerCase().includes(lowerText),
+  //     );
+  //     const newFilteredGroup = {};
+  //     Object.entries(groupedProducts).forEach(([category, productsArray]) => {
+  //       const filteredItems = productsArray[0].filter(product =>
+  //         product.title?.toLowerCase().includes(lowerText),
+  //       );
+  //       if (filteredItems.length > 0)
+  //         newFilteredGroup[category] = [filteredItems];
+  //     });
+  //     setFilteredTrendingProducts(filteredTrending);
+  //     setFilteredGroupedProducts(newFilteredGroup);
+  //   },
+  //   [trendingProducts, groupedProducts],
+  // );
+
+  const handleSearchChange = () => {
+    navigation.navigate('ProductList');
+  };
 
   const handleTabPress = useCallback(
     categoryName => {
@@ -197,7 +201,7 @@ const HomeScreen = () => {
 
   const handleCategoryPress = useCallback(
     (categoryId, categoryName) => {
-      navigation.navigate('CategoryProductsScreen', {categoryId, categoryName});
+      navigation.navigate('ProductList', {categoryId, categoryName});
     },
     [navigation],
   );
@@ -284,8 +288,7 @@ const HomeScreen = () => {
       {/* Scrollable Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{paddingTop: 150}} // add height same as sticky header
-      >
+        contentContainerStyle={{paddingTop: 150}}>
         <View
           style={{
             backgroundColor: 'white',
@@ -307,7 +310,7 @@ const HomeScreen = () => {
           {filteredTrendingProducts.length > 0 && (
             <View style={styles.sectionContainer}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Trending Products</Text>
+                <Text style={styles.sectionTitle}>Trending Services</Text>
                 <TouchableOpacity
                   onPress={() => handleCategoryPress(null, 'All Products')}>
                   <Text style={styles.seeAllText}>See All</Text>
@@ -323,7 +326,7 @@ const HomeScreen = () => {
             </View>
           )}
 
-          {categories.map(renderCategorySection)}
+          {/* {categories.map(renderCategorySection)} */}
         </View>
       </ScrollView>
     </View>

@@ -1,7 +1,7 @@
 import React from 'react';
 import {TouchableOpacity, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import {styles} from '../screens/styles/HomeScreenStyles';
+import {styles} from '../screens/styles/ProductListStyles';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
@@ -48,17 +48,15 @@ export const ProductCard = ({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
+          justifyContent: 'space-between',
+          // alignContent: 'flex-start',
         }}>
-        <Text style={styles.productPrice}>
-          ₹{Math.floor(product.discountPrice)}
-        </Text>
-
         {hasDiscount && (
           <View
             style={{
               flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginHorizontal: 8,
+              // justifyContent: 'space-between',
+              // marginHorizontal: 8,
             }}>
             <Text style={styles.originalPrice}>₹{product.price}</Text>
           </View>
@@ -79,9 +77,9 @@ export const ProductCard = ({
         )}
       </View>
 
-      {/* <Text style={styles.productPrice}>
+      <Text style={styles.productPrice}>
         ₹{Math.floor(product.discountPrice)}
-      </Text> */}
+      </Text>
       {/* <View>
         <Text>Add</Text>
       </View> */}

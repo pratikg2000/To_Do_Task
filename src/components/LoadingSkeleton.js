@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, ScrollView, Dimensions} from 'react-native';
 import {SkeletonLoader} from './SkeletonLoader';
-import {styles} from '../screens/styles/HomeScreenStyles';
+import {styles} from '../screens/styles/ProductListStyles';
 
 const {width} = Dimensions.get('window');
 

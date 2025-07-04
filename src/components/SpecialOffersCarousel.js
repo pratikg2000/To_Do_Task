@@ -7,7 +7,7 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import {styles} from '../screens/styles/HomeScreenStyles';
+import {styles} from '../screens/styles/ProductListStyles';
 
 const {width} = Dimensions.get('window');
 
