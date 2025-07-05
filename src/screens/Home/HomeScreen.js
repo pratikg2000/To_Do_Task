@@ -15,7 +15,7 @@ import {setCategoryProducts} from '../../redux/categoryProductsSlice';
 import {Imp} from '../../BasicImp';
 
 import {LoadingSkeleton} from '../../components/LoadingSkeleton';
-import {SearchBar} from '../../components/SearchBar';
+import {SearchContainer} from '../../components/SearchContainer';
 import {CategoryTabs} from '../../components/CategoryTabs';
 import {SpecialOffersCarousel} from '../../components/SpecialOffersCarousel';
 import {ProductCard} from '../../components/ProductCard';
@@ -282,7 +282,7 @@ const HomeScreen = () => {
             />
           </TouchableOpacity>
         </View>
-        <SearchBar onSearchChange={handleSearchChange} />
+        <SearchContainer onSearchChange={handleSearchChange} />
       </View>
 
       {/* Scrollable Content */}

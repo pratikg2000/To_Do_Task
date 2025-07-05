@@ -87,6 +87,12 @@ const ProductList = () => {
   const handleSearchChange = useCallback(
     text => {
       setSearchText(text);
+
+      // ✅ Switch to "All" tab when search starts
+      if (activeTab !== 'All') {
+        setActiveTab('All');
+      }
+
       if (text === '') {
         if (activeTab === 'All' || !activeTab) {
           setFilteredGroupedProducts(groupedProducts);
@@ -100,27 +106,17 @@ const ProductList = () => {
 
       const lowerText = text.toLowerCase();
 
-      if (activeTab === 'All' || !activeTab) {
-        // Search in all categories
-        const newFilteredGroup = {};
-        Object.entries(groupedProducts).forEach(([category, productsArray]) => {
-          const filteredItems = productsArray[0].filter(product =>
-            product.title?.toLowerCase().includes(lowerText),
-          );
-          if (filteredItems.length > 0)
-            newFilteredGroup[category] = [filteredItems];
-        });
-        setFilteredGroupedProducts(newFilteredGroup);
-      } else {
-        // Search in specific category
-        const categoryProducts = groupedProducts[activeTab]?.[0] || [];
-        const filteredItems = categoryProducts.filter(product =>
+      const newFilteredGroup = {};
+      Object.entries(groupedProducts).forEach(([category, productsArray]) => {
+        const filteredItems = productsArray[0].filter(product =>
           product.title?.toLowerCase().includes(lowerText),
         );
-        setFilteredGroupedProducts({
-          [activeTab]: [filteredItems],
-        });
-      }
+        if (filteredItems.length > 0) {
+          newFilteredGroup[category] = [filteredItems];
+        }
+      });
+
+      setFilteredGroupedProducts(newFilteredGroup);
     },
     [groupedProducts, activeTab],
   );
@@ -128,8 +124,7 @@ const ProductList = () => {
   const handleTabPress = useCallback(
     categoryName => {
       setActiveTab(categoryName);
-      setSearchText(''); // Clear search when changing tabs
-
+      setSearchText('');
       if (!categoryName || categoryName === 'All') {
         // Show all categories when "All" is selected
         setFilteredGroupedProducts(groupedProducts);
@@ -176,10 +171,6 @@ const ProductList = () => {
         <View key={category.id} style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{categoryName}</Text>
-            {/* <TouchableOpacity
-              onPress={() => handleCategoryPress(category.id, category.name)}>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity> */}
           </View>
           <FlatList
             key={`${category.id}-vertical`}
@@ -229,32 +220,46 @@ const ProductList = () => {
   };
 
   if (loading) return <LoadingSkeleton />;
-
   return (
     <View style={styles.container}>
       <View style={styles.stickyHeader}>
-        <SearchBar onSearchChange={handleSearchChange} />
+        {/* <SearchBar onSearchChange={handleSearchChange} /> */}
+        <SearchBar
+          onSearchChange={handleSearchChange}
+          searchInput={searchText}
+          setSearchInput={setSearchText}
+        />
       </View>
-      {/* Scrollable Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{paddingTop: 100}}>
+        contentContainerStyle={{flexGrow: 1, paddingTop: 100}}>
         <View
           style={{
+            flex: 1,
+            minHeight: '100%',
             backgroundColor: 'white',
-            width: '100%',
             borderTopLeftRadius: 30,
             borderTopRightRadius: 30,
+            paddingBottom: 20,
           }}>
-          {/* CategoryTabs with activeTab set to "All" by default */}
+          {/* Category Tabs */}
           <CategoryTabs
             categories={categories}
             activeTab={activeTab}
             onTabPress={handleTabPress}
           />
 
-          {/* Render category sections */}
-          {categories.map(renderCategorySection)}
+          {/* ✅ Show "No Data Found" if all product arrays are empty */}
+          {Object.values(filteredGroupedProducts).every(
+            productArray => productArray[0]?.length === 0,
+          ) ? (
+            <View
+              style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+              <Text style={{fontSize: 16, color: '#999'}}>No data found</Text>
+            </View>
+          ) : (
+            categories.map(renderCategorySection)
+          )}
         </View>
       </ScrollView>
     </View>
