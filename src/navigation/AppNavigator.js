@@ -14,7 +14,7 @@ const AppNavigator = () => (
   <Stack.Navigator screenOptions={{headerShown: false}}>
     <Stack.Screen name="Home" component={HomeScreen} />
     <Stack.Screen name="ProductList" component={ProductList} />
-    <Stack.Screen name="Product" component={ProductDetailScreen} />
+    <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
     <Stack.Screen name="Cart" component={CartScreen} />
     <Stack.Screen name="Profile" component={ProfileScreen} />
   </Stack.Navigator>

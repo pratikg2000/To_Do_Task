@@ -142,14 +142,8 @@ const ProductList = () => {
 
   const handleProductPress = useCallback(
     product => {
-      navigation.navigate('ProductDetail', {product});
-    },
-    [navigation],
-  );
-
-  const handleCategoryPress = useCallback(
-    (categoryId, categoryName) => {
-      navigation.navigate('CategoryProductsScreen', {categoryId, categoryName});
+      console.log('Pressed Product ID:', product);
+      navigation.navigate('ProductDetailScreen', {product});
     },
     [navigation],
   );
@@ -198,10 +192,6 @@ const ProductList = () => {
       <View key={category.id} style={styles.sectionContainer}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{categoryName}</Text>
-          {/* <TouchableOpacity
-            onPress={() => handleCategoryPress(category.id, category.name)}>
-            <Text style={styles.seeAllText}>See All</Text>
-          </TouchableOpacity> */}
         </View>
         <FlatList
           key={`${category.id}-horizontal`}
@@ -219,11 +209,9 @@ const ProductList = () => {
     );
   };
 
-  if (loading) return <LoadingSkeleton />;
   return (
     <View style={styles.container}>
       <View style={styles.stickyHeader}>
-        {/* <SearchBar onSearchChange={handleSearchChange} /> */}
         <SearchBar
           onSearchChange={handleSearchChange}
           searchInput={searchText}
@@ -249,10 +237,12 @@ const ProductList = () => {
             onTabPress={handleTabPress}
           />
 
-          {/* ✅ Show "No Data Found" if all product arrays are empty */}
-          {Object.values(filteredGroupedProducts).every(
-            productArray => productArray[0]?.length === 0,
-          ) ? (
+          {/* ✅ Conditional Rendering */}
+          {loading ? (
+            <LoadingSkeleton />
+          ) : Object.values(filteredGroupedProducts).every(
+              productArray => productArray[0]?.length === 0,
+            ) ? (
             <View
               style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
               <Text style={{fontSize: 16, color: '#999'}}>No data found</Text>

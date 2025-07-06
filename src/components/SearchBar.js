@@ -102,17 +102,16 @@ const initialProducts = [
   {id: 88, title: 'Half Body Waxing Combo (Oil Wax)'},
 ];
 
-export const SearchBar = ({onSearchChange}) => {
+export const SearchBar = ({searchInput, setSearchInput, onSearchChange}) => {
   const [displayedText, setDisplayedText] = useState('');
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
-  const [searchInput, setSearchInput] = useState('');
   const [productList, setProductList] = useState(initialProducts);
   const [suggestions, setSuggestions] = useState([]);
 
+  // Typing animation
   useEffect(() => {
     const currentPhrase = phrases[phraseIndex];
-
     if (charIndex <= currentPhrase.length) {
       const timeout = setTimeout(() => {
         setDisplayedText(currentPhrase.slice(0, charIndex));
@@ -128,9 +127,21 @@ export const SearchBar = ({onSearchChange}) => {
     }
   }, [charIndex, phraseIndex]);
 
+  // Hide suggestions on keyboard dismiss
+  useEffect(() => {
+    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setSuggestions([]);
+    });
+
+    return () => {
+      keyboardHideListener.remove();
+    };
+  }, []);
+
   const handleSearchChange = text => {
     const keyword = text.trim().toLowerCase();
     setSearchInput(text);
+    onSearchChange && onSearchChange(text);
 
     if (keyword === '') {
       setSuggestions([]);
@@ -141,14 +152,11 @@ export const SearchBar = ({onSearchChange}) => {
       product.title.toLowerCase().includes(keyword),
     );
 
-    // Only show suggestions if it's not an exact match (optional)
     if (filtered.length === 1 && filtered[0].title.toLowerCase() === keyword) {
-      setSuggestions([]); // hide suggestion if exactly matched
+      setSuggestions([]);
     } else {
       setSuggestions(filtered);
     }
-
-    onSearchChange && onSearchChange(text);
   };
 
   const handleSuggestionPress = title => {
@@ -166,10 +174,7 @@ export const SearchBar = ({onSearchChange}) => {
       'Remove Suggestion',
       'Do you want to remove this item?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        {text: 'Cancel', style: 'cancel'},
         {
           text: 'Remove',
           style: 'destructive',
