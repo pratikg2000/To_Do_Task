@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "197255356611",
+    "project_id": "notification-56892",
+    "storage_bucket": "notification-56892.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:197255356611:android:fb2bf5f1779d1872654276",
+        "android_client_info": {
+          "package_name": "com.glowkart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBju9uRc4AS-qvMPfbgPkpuJcXZTremGwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -18,8 +18,11 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    notificationType(state, action) {
+      state.notificationType = action.payload;
+    },
   },
 });
 
-export const {loginSuccess, logout} = authSlice.actions;
+export const {loginSuccess, logout, notificationType} = authSlice.actions;
 export default authSlice.reducer;
