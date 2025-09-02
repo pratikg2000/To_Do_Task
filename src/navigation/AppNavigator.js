@@ -1,23 +1,73 @@
-// navigation/AppNavigator.js
-import React from 'react';
+import {NavigationContainer, DefaultTheme} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import HomeScreen from '../screens/Home/HomeScreen';
-import ProductDetailScreen from '../screens/Home/ProductDetailScreen';
-import ProfileScreen from '../screens/Profile/ProfileScreen';
-import CartScreen from '../screens/Cart/CartScreen';
-import SplashScreen from '../screens/Auth/SplashScreen';
-import ProductList from '../screens/Home/ProductList';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import HomeScreen from '../screens/HomeScreen';
+import EditTaskScreen from '../screens/EditTaskScreen';
+import NotesScreen from '../screens/NotesScreen';
+import {Text} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+function TabLabel({title, focused}) {
+  return <Text style={{fontWeight: focused ? '700' : '500'}}>{title}</Text>;
+}
 
 const Stack = createStackNavigator();
+const Tabs = createBottomTabNavigator();
 
-const AppNavigator = () => (
-  <Stack.Navigator screenOptions={{headerShown: false}}>
-    <Stack.Screen name="Home" component={HomeScreen} />
-    <Stack.Screen name="ProductList" component={ProductList} />
-    <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
-    <Stack.Screen name="Cart" component={CartScreen} />
-    <Stack.Screen name="Profile" component={ProfileScreen} />
-  </Stack.Navigator>
-);
+function TasksStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{title: 'Tasks'}}
+      />
+      <Stack.Screen
+        name="EditTask"
+        component={EditTaskScreen}
+        options={{title: 'Add / Edit Task'}}
+      />
+    </Stack.Navigator>
+  );
+}
 
-export default AppNavigator;
+const navTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: 'white',
+  },
+};
+
+export default function App() {
+  return (
+    <Tabs.Navigator
+      screenOptions={({route}) => ({
+        headerShown: false,
+        tabBarIcon: ({focused, color, size}) => {
+          let iconName;
+
+          if (route.name === 'TasksTab') {
+            iconName = focused ? 'checkmark-done' : 'checkmark-done-outline';
+          } else if (route.name === 'Notes') {
+            iconName = focused ? 'document-text' : 'document-text-outline';
+          }
+
+          return <Ionicons name={iconName} size={20} color={color} />;
+        },
+        tabBarLabel: ({focused}) => (
+          <TabLabel
+            title={route.name === 'TasksTab' ? 'Tasks' : 'Notes'}
+            focused={focused}
+          />
+        ),
+      })}>
+      <Tabs.Screen
+        name="TasksTab"
+        component={TasksStack}
+        options={{title: 'Tasks'}}
+      />
+      <Tabs.Screen name="Notes" component={NotesScreen} />
+    </Tabs.Navigator>
+  );
+}
